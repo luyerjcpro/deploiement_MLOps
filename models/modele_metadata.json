@@ -1,0 +1,87 @@
+{
+    "model": {
+        "name": "GradientBoostingClassifier",
+        "parameters": {
+            "ccp_alpha": 0.0,
+            "criterion": "deprecated",
+            "init": null,
+            "learning_rate": 0.1,
+            "loss": "log_loss",
+            "max_depth": 3,
+            "max_features": null,
+            "max_leaf_nodes": null,
+            "min_impurity_decrease": 0.0,
+            "min_samples_leaf": 5,
+            "min_samples_split": 2,
+            "min_weight_fraction_leaf": 0.0,
+            "n_estimators": 100,
+            "n_iter_no_change": null,
+            "random_state": 42,
+            "subsample": 1.0,
+            "tol": 0.0001,
+            "validation_fraction": 0.1,
+            "verbose": 0,
+            "warm_start": false
+        },
+        "random_state": 42
+    },
+    "training": {
+        "trained_at_utc": "2026-10-05T23:43:22.645832+00:00",
+        "n_rows": 1470,
+        "n_raw_features": 31,
+        "test_size": 0.2,
+        "accuracy_test": 0.8673469387755102
+    },
+    "classification": {
+        "target": "a_quitte_l_entreprise",
+        "classes": [
+            "Non",
+            "Oui"
+        ],
+        "threshold": 0.231
+    },
+    "features": {
+        "nominal": [
+            "genre",
+            "statut_marital",
+            "poste",
+            "domaine_etude",
+            "augementation_salaire_precedente"
+        ],
+        "numerical": [
+            "age",
+            "revenu_mensuel",
+            "nombre_experiences_precedentes",
+            "annees_dans_le_poste_actuel",
+            "nombre_participation_pee",
+            "nb_formations_suivies",
+            "niveau_education",
+            "satisfaction_employee_environnement",
+            "satisfaction_employee_nature_travail",
+            "satisfaction_employee_equipe",
+            "satisfaction_employee_equilibre_pro_perso",
+            "note_evaluation_actuelle",
+            "stagnation_promotion",
+            "charge_trajet_travail",
+            "evolution",
+            "frequence_deplacement_ord"
+        ]
+    },
+    "preprocessing": {
+        "categorical_encoder": "OneHotEncoder",
+        "numerical_scaler": "StandardScaler",
+        "sampling": "SMOTE",
+        "sampling_parameters": {
+            "k_neighbors": 5,
+            "random_state": 42,
+            "sampling_strategy": "auto"
+        }
+    },
+    "environment": {
+        "python": "3.13.12",
+        "pandas": "3.0.6",
+        "scikit_learn": "1.9.1",
+        "imbalanced_learn": "0.14.2",
+        "joblib": "1.6.0"
+    }
+}
