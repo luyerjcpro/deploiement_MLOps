@@ -5,17 +5,16 @@ from typing import Annotated
 import joblib
 import pandas as pd
 from fastapi import Depends, FastAPI, HTTPException
-from schemas import EmployeeInput, PredictionResponse
 from sqlalchemy.orm import Session
-
-from database.connexion_db import get_session
-from database.models_tables import Employee, Prediction
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = PROJECT_ROOT / "models" / "modele.joblib"
 
-ressources: dict = {}
+from api.schemas import EmployeeInput, PredictionResponse
+from database.connexion_db import get_session
+from database.models_tables import Employee, Prediction
 
+ressources: dict = {}
 
 # Chargement du modèle
 @asynccontextmanager
