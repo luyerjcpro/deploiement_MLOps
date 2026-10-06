@@ -31,10 +31,6 @@ class Employee(Base):
     satisfaction_employee_equilibre_pro_perso: Mapped[int]
     note_evaluation_actuelle: Mapped[int]
     augementation_salaire_precedente: Mapped[str]
-    stagnation_promotion: Mapped[float]
-    charge_trajet_travail: Mapped[int]
-    evolution: Mapped[int]
-    frequence_deplacement_ord: Mapped[int]
 
 
 class Prediction(Base):

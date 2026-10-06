@@ -8,11 +8,13 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "dotenv>=0.9.9",
     "fastapi>=0.142.2",
     "imbalanced-learn>=0.14.2",
     "joblib>=1.6.0",
     "numpy>=2.5.3",
     "pandas>=3.0.6",
+    "psycopg>=3.3.6",
     "pydantic>=2.13.5",
     "scikit-learn>=1.9.1",
     "sqlalchemy>=2.1.3",
