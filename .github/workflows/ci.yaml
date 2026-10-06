@@ -1,41 +1,58 @@
 name: CI
 
-on:
-  push:
-    branches: [main]
-
-  pull_request:
-    branches: [main]
+on: [push]
 
 jobs:
-  ci:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Récupérer le dépôt
-      - name: Checkout
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
-      # 2. Installer Python
-      - name: Installer Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v5
 
-      # 3. Installer uv
-      - name: Installer uv
-        uses: astral-sh/setup-uv@v10
-        with:
-          enable-cache: true
+      - run: uv sync
 
-      # 4. Installer les dépendances
-      - name: Installer les dépendances
-        run: uv sync --locked --dev
+      - run: uv run ruff check .
 
-      # 5. Vérifier le code
-      - name: Lint
-        run: uv run ruff check src/ tests/
+  test:
+    runs-on: ubuntu-latest
 
-      # 6. Exécuter les tests
-      - name: Tests
-        run: uv run pytest -v
+    services:
+      db_postgres:
+        image: postgres:16
+
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: projet5_test
+
+        ports:
+          - 5432:5432
+
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/projet5_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - run: uv sync
+
+      - run: uv run pytest
+
+  build:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: docker build -t attrition-api:test .
