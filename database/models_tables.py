@@ -31,6 +31,12 @@ class Employee(Base):
     satisfaction_employee_equilibre_pro_perso: Mapped[int]
     note_evaluation_actuelle: Mapped[int]
     augementation_salaire_precedente: Mapped[str]
+    annees_dans_l_entreprise: Mapped[int] = mapped_column(Integer)
+    annees_depuis_la_derniere_promotion: Mapped[int] = mapped_column(Integer)
+    distance_domicile_travail: Mapped[int] = mapped_column(Integer)
+    heure_supplementaires: Mapped[str] = mapped_column(String)
+    note_evaluation_precedente: Mapped[int] = mapped_column(Integer)
+    frequence_deplacement: Mapped[str] = mapped_column(String)
 
 
 class Prediction(Base):
