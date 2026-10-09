@@ -59,12 +59,35 @@ NUM_COLS = [
     "frequence_deplacement_ord",
 ]
 
+FE_SOURCE_COLS = [
+    "annees_dans_l_entreprise",
+    "annees_depuis_la_derniere_promotion",
+    "distance_domicile_travail",
+    "heure_supplementaires",
+    "note_evaluation_precedente",
+    "frequence_deplacement",
+]
+
+ENGINEERED_COLS = [
+    "stagnation_promotion",
+    "charge_trajet_travail",
+    "evolution",
+    "frequence_deplacement_ord",
+]
+
+# Ce que le client doit fournir : le contrat d'entrée du modèle.
+RAW_COLS = (
+    NOMINAL_COLS
+    + [c for c in NUM_COLS if c not in ENGINEERED_COLS]
+    + FE_SOURCE_COLS
+)
+
 # Séparation des données entre variables explicatives et variable à expliquer
 def prepare_data(df: pd.DataFrame):
     le_target = LabelEncoder()
 
     y = le_target.fit_transform(df["a_quitte_l_entreprise"])
-    X = df.drop(columns=["a_quitte_l_entreprise"])
+    X = df.drop(columns=["a_quitte_l_entreprise"])[RAW_COLS]
 
     X_train, X_test, y_train, y_test = train_test_split(
         X,
@@ -182,7 +205,7 @@ def save_metadata(
         "training": {
             "trained_at_utc": datetime.now(UTC).isoformat(),
             "n_rows": len(df),
-            "n_raw_features": len(df.columns) - 1,
+            "n_raw_features": len(RAW_COLS) - 1,
             "test_size": 0.2,
             "accuracy_test": accuracy,
         },
@@ -192,6 +215,7 @@ def save_metadata(
             "threshold": threshold,
         },
         "features": {
+            "contract": RAW_COLS,
             "nominal": NOMINAL_COLS,
             "numerical": NUM_COLS,
         },
@@ -232,7 +256,7 @@ if __name__ == "__main__":
 
     # Vérification : une ligne brute doit être prédictible directement.
     X_brut = df.drop(columns=["a_quitte_l_entreprise"])
-    exemple = X_brut.iloc[[0]]
+    exemple = X_brut[RAW_COLS].iloc[[0]]
 
     prediction = pipeline.predict(exemple)
     probabilites = pipeline.predict_proba(exemple)
