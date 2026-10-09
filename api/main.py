@@ -1,10 +1,13 @@
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated
 
 import joblib
 import pandas as pd
-from fastapi import Depends, FastAPI, HTTPException
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException, Security
+from fastapi.security.api_key import APIKeyHeader
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -14,6 +17,20 @@ MODEL_PATH = PROJECT_ROOT / "models" / "modele.joblib"
 from api.schemas import EmployeeInput, PredictionResponse
 from database.connexion_db import get_session
 from database.models_tables import Employee, Prediction
+
+#######  X-API-KEY  #######
+# Charge le fichier .env si l'api est en local
+load_dotenv()
+
+# Récupère la clé secrète depuis l'environnement du serveur
+SECRET_API_KEY = os.getenv("SECRET_API_KEY")
+
+# Sécurité pour bloquer l'API si le secret est absent au démarrage
+if not SECRET_API_KEY:
+    raise ValueError(
+        "La variable d'environnement SECRET_API_KEY est manquante."
+    )
+
 
 #######  MODELE  #######
 # Dictionnaire ressources pour enregistrer le modèle
@@ -31,9 +48,9 @@ async def lifespan(app: FastAPI):
 description = """
 🚀 **Employee Predictor API** vous permet d'évaluer les indicateurs des employés grâce au Machine Learning.
 
-## Fonctionnalités principaux
+## Fonctionnalités principales
+* **Consultation des données employés**
 * **Prédiction en temps réel** (`/predict`)
-* Gestion des données employés
 """
 
 # Tags des routes de l'api.
