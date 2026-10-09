@@ -3,9 +3,8 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class EmployeeInput(BaseModel):
-    # Identifiant de l'employé existant en base.
-    employee_id: int = Field(gt=0)
+class EmployeeFeatures(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
 
     # Variables directement utilisées par le modèle.
     age: int = Field(ge=18, le=60)
@@ -63,18 +62,9 @@ class EmployeeInput(BaseModel):
         "25 %",
     ]
 
-    # Variables sources nécessaires à create_features().
-    annees_depuis_la_derniere_promotion: int = Field(ge=0, le=15)
-    annees_dans_l_entreprise: int = Field(ge=0, le=40)
-    distance_domicile_travail: int = Field(ge=1, le=29)
-    heure_supplementaires: Literal["Non", "Oui"]
-    note_evaluation_precedente: Literal[1, 2, 3, 4]
-    frequence_deplacement: Literal[
-        "Aucun",
-        "Occasionnel",
-        "Frequent",
-    ]
-
+class EmployeeInput(EmployeeFeatures):
+    # Identifiant de l'employé existant en base.
+    employee_id: int = Field(gt=0)
 
 class PredictionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

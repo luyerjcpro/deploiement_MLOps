@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = PROJECT_ROOT / "models" / "modele.joblib"
 
-from api.schemas import EmployeeInput, PredictionResponse
+from api.schemas import EmployeeFeatures, EmployeeInput, PredictionResponse
 from database.connexion_db import get_session
 from database.models_tables import Employee, Prediction
 
@@ -132,36 +132,37 @@ def read_employee(
 
 # Endpoint pour l'envoi de la requête de prédiction en entrant des données
 @app.post(
-    "/predict",
+    "/employees/{employee_id}/predict",
     response_model=PredictionResponse,
     status_code=201,
     tags=["Machine Learning"],
 )
-def predire(
-    entree: EmployeeInput,
+def predire_employe(
+    employee_id: int,
     session: SessionDep,
 ):
     """Génère et enregistre une prédiction de Machine Learning pour un employé.
 
-    Cette fonction extrait les données de l'employé, applique le pipeline de
-    classification, calcule les probabilités selon un seuil personnalisé, puis
-    persiste le résultat dans la base de données.
+    Les caractéristiques sont lues directement en base à partir de l'identifiant,
+    puis passées au pipeline de classification. La classe est déterminée selon un
+    seuil personnalisé, et le résultat est persisté.
 
     ### Args:
-    - **entree (EmployeeInput)**: 
-        Les caractéristiques nécessaires au modèle, contenant obligatoirement l'identifiant de l'employé.  
-    - **session (SessionDep)**: 
+    - **employee_id (int)**:
+        L'identifiant de l'employé en base, fourni dans l'URL.
+    - **session (SessionDep)**:
         La session de base de données injectée par dépendance.
 
     ### Raises:
-    -   HTTPException: Erreur 404 si l'identifiant de l'employé fourni n'existe pas dans la base de données.
+    -   HTTPException: Erreur 404 si l'identifiant de l'employé n'existe pas en base.
 
     ### Returns:
-    -   **Prediction**: L'objet prédiction enregistré en base contenant la classe finale ainsi que le détail des probabilités.
+    -   **Prediction**: L'objet prédiction enregistré en base contenant la classe
+        finale ainsi que le détail des probabilités.
     """
 
     # La prédiction doit être liée à un employé existant.
-    employee = session.get(Employee, entree.employee_id)
+    employee = session.get(Employee, employee_id)
 
     if employee is None:
         raise HTTPException(
@@ -174,11 +175,14 @@ def predire(
     pipeline = modele_ml["pipeline"]
     seuil = modele_ml["seuil"]
 
-    # employee_id sert à PostgreSQL, pas au modèle.
-    donnees_modele = entree.model_dump(
-        exclude={"employee_id"}
-    )
-    df = pd.DataFrame([donnees_modele])
+    # Les features viennent de la base, pas du client.
+    profil = EmployeeFeatures.model_validate(employee)
+    df = pd.DataFrame([profil.model_dump()])
+    
+    manquantes = set(pipeline.feature_names_in_) - set(df.columns)
+    if manquantes:
+        raise HTTPException(500, f"Colonnes attendues par le modèle et absentes : {sorted(manquantes)}")
+    df = df[list(pipeline.feature_names_in_)]
 
     probabilites = pipeline.predict_proba(df)[0]
 
