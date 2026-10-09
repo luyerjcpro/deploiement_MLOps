@@ -62,6 +62,14 @@ class EmployeeFeatures(BaseModel):
         "25 %",
     ]
 
+    # Variables sources du feature engineering (create_features).
+    annees_dans_l_entreprise: int = Field(ge=0, le=40)
+    annees_depuis_la_derniere_promotion: int = Field(ge=0, le=15)
+    distance_domicile_travail: int = Field(ge=1, le=29)
+    heure_supplementaires: Literal["Oui", "Non"]
+    note_evaluation_precedente: Literal[1, 2, 3, 4]
+    frequence_deplacement: Literal["Aucun", "Occasionnel", "Frequent"]
+
 class EmployeeInput(EmployeeFeatures):
     # Identifiant de l'employé existant en base.
     employee_id: int = Field(gt=0)
