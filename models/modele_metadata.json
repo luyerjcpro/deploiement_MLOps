@@ -26,11 +26,11 @@
         "random_state": 42
     },
     "training": {
-        "trained_at_utc": "2026-10-10T21:00:38.695840+00:00",
-        "n_rows": 1470,
+        "trained_at_utc": "2026-10-11T14:04:52.572555+00:00",
+        "n_rows": 1323,
         "n_raw_features": 27,
         "test_size": 0.2,
-        "accuracy_test": 0.8673469387755102
+        "accuracy_test": 0.8566037735849057
     },
     "classification": {
         "target": "a_quitte_l_entreprise",

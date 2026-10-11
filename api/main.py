@@ -101,7 +101,7 @@ def health_check():
     """Healthcheck explicite, utilisé par les plateformes de déploiement."""
     return {"status": "healthy"}
 
-# Endpint pour la lecture des données sur la table Employees
+# Endpoint pour la lecture des données sur la table Employees
 @app.get(
     "/employees/{employee_id}", 
     tags=["Employees"],
