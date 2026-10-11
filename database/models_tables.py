@@ -13,7 +13,8 @@ class Employee(Base):
         primary_key=True,
         autoincrement=True,
     )
-
+    
+    id_employee: Mapped[int] = mapped_column(unique=True)
     age: Mapped[int]
     genre: Mapped[str]
     revenu_mensuel: Mapped[int]

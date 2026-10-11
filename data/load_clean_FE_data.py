@@ -2,11 +2,13 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 RACINE = Path(__file__).resolve().parents[1]
 DOSSIER_BRUT = RACINE / "data" / "raw"
 DOSSIER_PROCESSED = RACINE / "data" / "processed"
 
+RANDOM_STATE = 42
 
 def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
@@ -110,6 +112,16 @@ if __name__ == "__main__":
 
     df = create_features(df.copy())
 
-    df.to_csv(DOSSIER_PROCESSED / "df_final.csv", index=False)
+    df_final, df_validate = train_test_split(
+        df,
+        test_size=0.1,
+        random_state=RANDOM_STATE,
+        stratify=df["a_quitte_l_entreprise"],
+    )
 
-    print("Dataset final créé.")
+
+    df_final.to_csv(DOSSIER_PROCESSED / "df_final.csv", index=False)
+    df_validate.to_csv(DOSSIER_PROCESSED / "df_validate.csv", index=False)
+
+    print(f"df_final    : {len(df_final)} lignes (entraînement + test)")
+    print(f"df_validate : {len(df_validate)} lignes (validation via API)")
