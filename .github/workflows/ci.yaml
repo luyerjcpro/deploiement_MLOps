@@ -61,10 +61,5 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      # Garde-fou : tant que le Dockerfile n'est pas versionné, ce job
-      # échouerait sans message clair. À retirer une fois le Dockerfile ajouté.
-      - name: Vérifier la présence du Dockerfile
-        run: test -f Dockerfile || { echo "::error::Dockerfile absent du dépôt"; exit 1; }
-
+      
       - run: docker build -t attrition-api:test .
