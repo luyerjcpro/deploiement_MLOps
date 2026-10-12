@@ -23,15 +23,6 @@ from urllib.parse import urlsplit, urlunsplit
 import pytest
 from dotenv import load_dotenv
 
-<<<<<<< HEAD
-from api.main import app
-from database.connexion_db import engine
-from database.models_tables import Base
-
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_database():
-=======
 load_dotenv()
 
 # Clé API utilisée par les tests. setdefault : si la variable existe déjà
@@ -63,13 +54,16 @@ def _construire_url_de_test() -> str:
 
     # Garde-fou : les tests créent et détruisent le schéma. S'ils pointaient
     # sur la base applicative, `drop_all` effacerait les données réelles.
-    if url_applicative and url_retenue == url_applicative:
-        if not urlsplit(url_retenue).path.rstrip("/").endswith("_test"):
-            pytest.exit(
-                "La base de test est identique à la base applicative. "
-                "Définissez TEST_DATABASE_URL vers une base dédiée.",
-                returncode=4,
-            )
+    if (
+        url_applicative
+        and url_retenue == url_applicative
+        and not urlsplit(url_retenue).path.rstrip("/").endswith("_test")
+    ):
+        pytest.exit(
+            "La base de test est identique à la base applicative. "
+            "Définissez TEST_DATABASE_URL vers une base dédiée.",
+            returncode=4,
+        )
 
     return url_retenue
 
@@ -79,12 +73,14 @@ URL_DE_TEST = _construire_url_de_test()
 # Réécriture AVANT tout import de l'application : `connexion_db` lira celle-ci.
 os.environ["DATABASE_URL"] = URL_DE_TEST
 
-from fastapi.testclient import TestClient  # noqa: E402
-from sqlalchemy import text  # noqa: E402
+# Imports volontairement placés après la réécriture de DATABASE_URL ci-dessus
+# (la règle E402 n'est pas active dans la configuration Ruff de ce projet).
+from fastapi.testclient import TestClient
+from sqlalchemy import text
 
-from api.main import app  # noqa: E402
-from database.connexion_db import SessionLocal, engine, get_session  # noqa: E402
-from database.models_tables import Base, Employee  # noqa: E402
+from api.main import app
+from database.connexion_db import SessionLocal, engine, get_session
+from database.models_tables import Base, Employee
 
 
 # ---------------------------------------------------------------------------
@@ -102,14 +98,11 @@ def schema_de_test():
     brutalement, la suivante repart quand même d'une base propre.
     """
     Base.metadata.drop_all(bind=engine)
->>>>>>> test
     Base.metadata.create_all(bind=engine)
 
     yield
 
     Base.metadata.drop_all(bind=engine)
-<<<<<<< HEAD
-=======
 
 
 # ---------------------------------------------------------------------------
@@ -134,7 +127,6 @@ def session():
         connexion.execute(
             text("TRUNCATE predictions, employees RESTART IDENTITY CASCADE")
         )
->>>>>>> test
 
 
 @pytest.fixture

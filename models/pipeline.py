@@ -13,7 +13,6 @@ from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import (
-    FunctionTransformer,
     LabelEncoder,
     OneHotEncoder,
     StandardScaler,
