@@ -1,8 +1,6 @@
 name: CI
 
-on:
-  push: {branches: [main]}
-  pull_request: {branches: [main]}
+on: [push]
 
 jobs:
   lint:
@@ -11,9 +9,57 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-          cache: pip
+      - uses: astral-sh/setup-uv@v5
 
-      - run: pip install ruff && ruff check src/
+      - run: uv sync
+
+      - run: uv run ruff check .
+
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      db_postgres:
+        image: postgres:16
+
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: projet5_test
+
+        ports:
+          - 5432:5432
+
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # Le nom de la base se termine par _test : le conftest.py l'accepte tel
+      # quel et ne risque donc pas de viser une base applicative.
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/projet5_test
+
+      # api/main.py refuse de démarrer sans cette variable. En CI on utilise
+      # le secret du dépôt s'il existe, sinon une valeur de test : la clé ne
+      # protège ici qu'une base jetable, elle n'a pas à être la vraie.
+      SECRET_API_KEY: ${{ secrets.SECRET_API_KEY || 'cle-de-test-ci' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - run: uv sync
+
+      - run: uv run pytest -v
+
+  build:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - run: docker build -t attrition-api:test .
