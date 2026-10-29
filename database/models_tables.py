@@ -13,7 +13,8 @@ class Employee(Base):
         primary_key=True,
         autoincrement=True,
     )
-
+    
+    id_employee: Mapped[int] = mapped_column(unique=True)
     age: Mapped[int]
     genre: Mapped[str]
     revenu_mensuel: Mapped[int]
@@ -37,6 +38,11 @@ class Employee(Base):
     heure_supplementaires: Mapped[str] = mapped_column(String)
     note_evaluation_precedente: Mapped[int] = mapped_column(Integer)
     frequence_deplacement: Mapped[str] = mapped_column(String)
+    stagnation_promotion: Mapped[float]
+    charge_trajet_travail: Mapped[int]
+    evolution: Mapped[int]
+    heures_sup_bin: Mapped[int]
+    frequence_deplacement_ord: Mapped[int]
 
 
 class Prediction(Base):

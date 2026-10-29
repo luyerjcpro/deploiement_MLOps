@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 
-CSV_PATH = BASE_DIR / "data" / "processed" / "df_final.csv"
+CSV_PATH = BASE_DIR / "data" / "processed" / "df_validate.csv"
 
 
 
