@@ -1,0 +1,37 @@
+# Tout ce qui n'a aucune raison d'entrer dans le contexte de build.
+# Effet direct : build plus rapide, image plus petite, et surtout aucun
+# secret ni donnée personnelle embarqués par accident dans une couche.
+
+# Historique et CI
+.git
+.gitignore
+.github
+
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+
+# Environnements et caches Python
+.venv
+__pycache__/
+*.py[cod]
+*.egg-info
+.ruff_cache
+.pytest_cache
+
+# Tests : inutiles à l'exécution du service
+tests/
+conftest.py
+
+# Données : les CSV sont volumineux et contiennent des données employés.
+# L'API lit PostgreSQL, elle n'a jamais besoin des fichiers sources.
+*.csv
+data/raw/
+data/processed/
+
+# Divers
+*.ipynb
+.vscode/
+.idea/
+.DS_Store

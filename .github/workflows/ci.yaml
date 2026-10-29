@@ -37,7 +37,14 @@ jobs:
           --health-retries 5
 
     env:
+      # Le nom de la base se termine par _test : le conftest.py l'accepte tel
+      # quel et ne risque donc pas de viser une base applicative.
       DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/projet5_test
+
+      # api/main.py refuse de démarrer sans cette variable. En CI on utilise
+      # le secret du dépôt s'il existe, sinon une valeur de test : la clé ne
+      # protège ici qu'une base jetable, elle n'a pas à être la vraie.
+      SECRET_API_KEY: ${{ secrets.SECRET_API_KEY || 'cle-de-test-ci' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -46,7 +53,7 @@ jobs:
 
       - run: uv sync
 
-      - run: uv run pytest
+      - run: uv run pytest -v
 
   build:
     needs: [lint, test]
@@ -54,5 +61,5 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
+      
       - run: docker build -t attrition-api:test .
