@@ -3,7 +3,11 @@ import sys
 from pathlib import Path
 
 import pandas as pd
-from sklearn.metrics import classification_report, confusion_matrix, average_precision_score
+from sklearn.metrics import (
+    average_precision_score,
+    classification_report,
+    confusion_matrix,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
