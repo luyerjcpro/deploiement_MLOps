@@ -1,0 +1,91 @@
+# Déploiement local complet : la base et l'API, sur un réseau commun.
+#
+# Les variables ${...} sont lues dans le fichier .env à la racine du dépôt
+# (substitution automatique par Docker Compose, à ne pas confondre avec le
+# load_dotenv() de l'application).
+#
+# Démarrage :
+#     docker compose up --build
+#
+# Création des tables, une seule fois après le premier démarrage :
+#     docker compose run --rm api python database/create_tables_db.py
+#
+# Chargement des employés depuis le CSV (le fichier n'étant pas dans l'image,
+# la commande se lance depuis l'hôte, avec DATABASE_URL pointant sur localhost) :
+#     uv run python database/insert_raws.py
+
+services:
+  db:
+    image: postgres:16
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+    # Port exposé sur l'hôte pour pouvoir inspecter la base avec DBeaver ou
+    # psql, et pour lancer les scripts de chargement depuis le terminal.
+    # Le port de GAUCHE est celui de l'hôte, paramétrable : si 5432 est déjà
+    # occupé par un autre PostgreSQL (le bac à sable, une installation
+    # système), mettre POSTGRES_PORT=5433 dans .env suffit.
+    # Le port de DROITE est celui du conteneur : il ne change jamais, et c'est
+    # celui que le service `api` utilise via le réseau interne.
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+    # Volume NOMMÉ : les données survivent à un `docker compose down`.
+    # Pour repartir de zéro, il faut explicitement `docker compose down -v`.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    # Le healthcheck est ce qui rend `service_healthy` possible côté API :
+    # sans lui, Compose ne sait que si le conteneur est lancé, pas si
+    # PostgreSQL accepte réellement les connexions.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+    restart: unless-stopped
+
+  api:
+    build: .
+
+    environment:
+      # L'hôte est `db`, le nom du service : c'est le DNS interne du réseau
+      # Compose qui le résout. Mettre `localhost` ici désignerait le conteneur
+      # de l'API lui-même — c'est l'erreur classique.
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      SECRET_API_KEY: ${SECRET_API_KEY}
+      PORT: 8000
+
+    ports:
+      - "8000:8000"
+
+    # L'API charge le modèle et ouvre un pool de connexions au démarrage :
+    # elle ne doit pas démarrer avant que la base réponde.
+    depends_on:
+      db:
+        condition: service_healthy
+
+    # Sonde applicative : vérifie que l'API répond, pas seulement que le
+    # processus tourne. urllib évite d'installer curl dans l'image.
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - |
+          import sys, urllib.request
+          sys.exit(0 if urllib.request.urlopen("http://localhost:8000/health").status == 200 else 1)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+    restart: unless-stopped
+
+volumes:
+  pgdata:

@@ -13,7 +13,6 @@ from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import (
-    FunctionTransformer,
     LabelEncoder,
     OneHotEncoder,
     StandardScaler,
@@ -29,8 +28,6 @@ RANDOM_STATE = 42
 THRESHOLD = 0.231  # threshold optimal pour le modèle de classification
 
 
-from data.feature_engineering import create_features
-
 # Colonnes réellement utilisées par le modèle après create_features().
 NOMINAL_COLS = [
     "genre",
@@ -38,6 +35,8 @@ NOMINAL_COLS = [
     "poste",
     "domaine_etude",
     "augementation_salaire_precedente",
+    "heure_supplementaires",
+    "frequence_deplacement",
 ]
 
 NUM_COLS = [
@@ -45,6 +44,9 @@ NUM_COLS = [
     "revenu_mensuel",
     "nombre_experiences_precedentes",
     "annees_dans_le_poste_actuel",
+    "annees_dans_l_entreprise",
+    "annees_depuis_la_derniere_promotion",
+    "distance_domicile_travail",
     "nombre_participation_pee",
     "nb_formations_suivies",
     "niveau_education",
@@ -53,18 +55,23 @@ NUM_COLS = [
     "satisfaction_employee_equipe",
     "satisfaction_employee_equilibre_pro_perso",
     "note_evaluation_actuelle",
+    "note_evaluation_precedente",
     "stagnation_promotion",
     "charge_trajet_travail",
     "evolution",
+    "heures_sup_bin",
     "frequence_deplacement_ord",
 ]
+
+MODEL_COLS = NOMINAL_COLS + NUM_COLS   # 28 en tout
+
 
 # Séparation des données entre variables explicatives et variable à expliquer
 def prepare_data(df: pd.DataFrame):
     le_target = LabelEncoder()
 
     y = le_target.fit_transform(df["a_quitte_l_entreprise"])
-    X = df.drop(columns=["a_quitte_l_entreprise"])
+    X = df[MODEL_COLS]
 
     X_train, X_test, y_train, y_test = train_test_split(
         X,
@@ -109,13 +116,6 @@ def build_preprocessor() -> ColumnTransformer:
 def build_pipeline(preprocessor: ColumnTransformer) -> ImbPipeline:
     return ImbPipeline(
         steps=[
-            (
-                "features",
-                FunctionTransformer(
-                    create_features,
-                    validate=False,
-                ),
-            ),
             ("preprocessor", preprocessor),
             ("smote", SMOTE(random_state=RANDOM_STATE)),
             (
@@ -182,7 +182,7 @@ def save_metadata(
         "training": {
             "trained_at_utc": datetime.now(UTC).isoformat(),
             "n_rows": len(df),
-            "n_raw_features": len(df.columns) - 1,
+            "n_raw_features": len(MODEL_COLS) - 1,
             "test_size": 0.2,
             "accuracy_test": accuracy,
         },
@@ -192,6 +192,7 @@ def save_metadata(
             "threshold": threshold,
         },
         "features": {
+            "contract": MODEL_COLS,
             "nominal": NOMINAL_COLS,
             "numerical": NUM_COLS,
         },
@@ -232,7 +233,7 @@ if __name__ == "__main__":
 
     # Vérification : une ligne brute doit être prédictible directement.
     X_brut = df.drop(columns=["a_quitte_l_entreprise"])
-    exemple = X_brut.iloc[[0]]
+    exemple = X_brut[MODEL_COLS].iloc[[0]]
 
     prediction = pipeline.predict(exemple)
     probabilites = pipeline.predict_proba(exemple)
