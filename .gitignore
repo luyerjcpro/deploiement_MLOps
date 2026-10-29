@@ -13,5 +13,5 @@ wheels/
 .env
 
 # Data
-*.csv
+*.csv 
 *.sql
