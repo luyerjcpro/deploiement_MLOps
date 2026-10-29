@@ -6,15 +6,15 @@ from typing import Annotated
 import joblib
 import pandas as pd
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Security
-from fastapi.security.api_key import APIKeyHeader
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = PROJECT_ROOT / "models" / "modele.joblib"
 
-from api.schemas import EmployeeFeatures, EmployeeInput, PredictionResponse
+from api.schemas import EmployeeFeatures, PredictionResponse
+from api.security import verify_api_key
 from database.connexion_db import get_session
 from database.models_tables import Employee, Prediction
 
@@ -101,10 +101,11 @@ def health_check():
     """Healthcheck explicite, utilisé par les plateformes de déploiement."""
     return {"status": "healthy"}
 
-# Endpint pour la lecture des données sur la table Employees
+# Endpoint pour la lecture des données sur la table Employees
 @app.get(
     "/employees/{employee_id}", 
     tags=["Employees"],
+    dependencies=[Depends(verify_api_key)],
     responses={
         404: {
             "model": MessageErreur, 
@@ -136,6 +137,7 @@ def read_employee(
     response_model=PredictionResponse,
     status_code=201,
     tags=["Machine Learning"],
+    dependencies=[Depends(verify_api_key)],
 )
 def predire_employe(
     employee_id: int,
@@ -203,7 +205,7 @@ def predire_employe(
     )
 
     prediction = Prediction(
-        employee_id=entree.employee_id,
+        employee_id=employee_id,
         classe_predite=classe_predite,
         probabilite_non=probabilite_non,
         probabilite_oui=probabilite_oui,

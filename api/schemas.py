@@ -70,6 +70,14 @@ class EmployeeFeatures(BaseModel):
     note_evaluation_precedente: Literal[1, 2, 3, 4]
     frequence_deplacement: Literal["Aucun", "Occasionnel", "Frequent"]
 
+    # Variables produites par create_features(), désormais fournies par le client.
+    stagnation_promotion: float = Field(ge=0.0, le=1.0)
+    charge_trajet_travail: int = Field(ge=0, le=29)
+    evolution: int = Field(ge=-3, le=3)
+    heures_sup_bin: Literal[0, 1]
+    frequence_deplacement_ord: Literal[0, 1, 2]
+
+
 class EmployeeInput(EmployeeFeatures):
     # Identifiant de l'employé existant en base.
     employee_id: int = Field(gt=0)
@@ -77,6 +85,7 @@ class EmployeeInput(EmployeeFeatures):
 class PredictionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: int
     employee_id: int = Field(gt=0)
     classe_predite: Literal["Non", "Oui"]
     probabilite_non: float = Field(ge=0.0, le=1.0)

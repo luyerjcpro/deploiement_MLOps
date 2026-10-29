@@ -1,4 +1,4 @@
-from sqlalchemy import CheckConstraint, ForeignKey
+from sqlalchemy import CheckConstraint, ForeignKey, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -13,7 +13,8 @@ class Employee(Base):
         primary_key=True,
         autoincrement=True,
     )
-
+    
+    id_employee: Mapped[int] = mapped_column(unique=True)
     age: Mapped[int]
     genre: Mapped[str]
     revenu_mensuel: Mapped[int]
@@ -31,6 +32,17 @@ class Employee(Base):
     satisfaction_employee_equilibre_pro_perso: Mapped[int]
     note_evaluation_actuelle: Mapped[int]
     augementation_salaire_precedente: Mapped[str]
+    annees_dans_l_entreprise: Mapped[int] = mapped_column(Integer)
+    annees_depuis_la_derniere_promotion: Mapped[int] = mapped_column(Integer)
+    distance_domicile_travail: Mapped[int] = mapped_column(Integer)
+    heure_supplementaires: Mapped[str] = mapped_column(String)
+    note_evaluation_precedente: Mapped[int] = mapped_column(Integer)
+    frequence_deplacement: Mapped[str] = mapped_column(String)
+    stagnation_promotion: Mapped[float]
+    charge_trajet_travail: Mapped[int]
+    evolution: Mapped[int]
+    heures_sup_bin: Mapped[int]
+    frequence_deplacement_ord: Mapped[int]
 
 
 class Prediction(Base):
