@@ -1,9 +1,21 @@
 # Déploiement d'un modèle de machine learning : prédiction de l'attrition
 
-> **objectif et contexte** : Le client (Futurisys), le besoin RH, ce que fait l'API, et le fait qu'il s'agit d'une preuve de concept.
+> **objectif et contexte** :  
+Futurisys, client fictif de ce projet, souhaite passer d'un modèle de machine learning développé dans un notebook à un service que d'autres applications peuvent interroger. 
 
-**API en ligne** : <https://deploiement-mlops.onrender.com/docs>
-Hébergée sur le plan gratuit de Render : après une période d'inactivité, le premier appel peut prendre plusieurs dizaines de secondes.
+>Le cas d'usage retenu est la prédiction de l'attrition : estimer, à partir des données RH, la probabilité qu'un collaborateur quitte l'entreprise. Les équipes RH peuvent ainsi anticiper les départs et engager un échange avec les personnes concernées avant qu'il ne soit trop tard.
+
+>Le modèle, un Gradient Boosting, a été entraîné sur trois extractions RH : le SIRH, les évaluations annuelles et un sondage interne. Son seuil de décision (0,231) est volontairement bas : il privilégie la détection des départs, quitte à émettre quelques fausses alertes.
+
+L'API rend ce modèle utilisable :
+
+- elle renvoie la fiche d'un employé enregistré en base ;
+- elle calcule, pour cet employé, la probabilité de départ et la classe prédite (Oui ou Non) ;
+- elle enregistre chaque prédiction dans PostgreSQL, ce qui permet de tracer les résultats et d'évaluer le modèle sur des employés qu'il n'a pas vus pendant l'entraînement ;
+- elle n'est accessible qu'avec une clé API.
+
+Ce dépôt est une preuve de concept. Il démontre la chaîne complète de mise en production (préparation des données, entraînement, base de données, API, tests, intégration continue et déploiement) sur un jeu de 147 employés de validation. Ce n'est pas un outil RH prêt à l'emploi : une prédiction est une aide à la décision, à interpréter par les RH, et non une décision automatique.
+
 
 ## Sommaire
 
@@ -465,3 +477,11 @@ erDiagram
         float probabilite_oui
     }
 ```
+La modification de la base de données dépend exclusivement du développeur car la gestion du SQL est un processus qui lui est dédié.
+
+## 10. Axes d'amélioration
+
+1. Permettre d'ajouter une interface web interactive  avec Gradio ou Streamlit.
+2. Généralisation des tests pour protéger davantage le code et atteindre une couverture de 80%.
+3. Migration sur RENDER possible.
+
